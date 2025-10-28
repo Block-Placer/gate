@@ -43,7 +43,7 @@
   <button id="openGate">Open Gate</button>
 
   <script>
-    const ws = new WebSocket("ws://localhost:8765");
+    const ws = new WebSocket("ws://gate123.loca.lt:8765");
 
     ws.onopen = () => console.log("✅ Connected to gate server");
     ws.onerror = (e) => console.error("❌ WebSocket error:", e);
