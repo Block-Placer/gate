@@ -20,17 +20,30 @@
       font-size: 2rem;
       margin-bottom: 20px;
     }
-    input {
-      padding: 10px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 5px;
-      outline: none;
+    .code-inputs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .code-box {
+      width: 50px;
+      height: 60px;
+      font-size: 2rem;
       text-align: center;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      background: white;
+      color: #1e90ff;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .code-box:focus {
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
     }
     button {
-      margin-top: 15px;
-      padding: 10px 20px;
+      margin-top: 25px;
+      padding: 10px 25px;
       font-size: 1rem;
       border: none;
       border-radius: 5px;
@@ -44,19 +57,26 @@
       background-color: #f1f1f1;
     }
     #message {
-      margin-top: 20px;
+      margin-top: 25px;
       font-size: 1.2rem;
     }
   </style>
 </head>
 <body>
   <h1>Enter Verification Code</h1>
-  <input type="text" id="codeInput" placeholder="Enter your code">
+
+  <div class="code-inputs">
+    <input type="text" maxlength="1" class="code-box" id="code1" autofocus>
+    <input type="text" maxlength="1" class="code-box" id="code2">
+    <input type="text" maxlength="1" class="code-box" id="code3">
+    <input type="text" maxlength="1" class="code-box" id="code4">
+  </div>
+
   <button onclick="sendGateRequest()">Open Gate</button>
   <div id="message"></div>
 
   <script>
-    const validCodes = ["1234", "5678", "2468", "9999"]; // ✅ Add all your valid codes here
+    const validCodes = ["1234", "5678", "2468", "9999"]; // ✅ Add all valid codes here
     const wsUrl = "wss://gatesystem.loca.lt";
     let ws;
     const messageBox = document.getElementById("message");
@@ -74,17 +94,18 @@
         console.log("❌ Disconnected from gate server");
         messageBox.textContent = "⚠️ Gate system offline";
         messageBox.style.color = "yellow";
-        // Try to reconnect automatically
         setTimeout(connectWebSocket, 3000);
       };
 
-      ws.onerror = (err) => {
-        console.error("WebSocket error:", err);
-      };
+      ws.onerror = (err) => console.error("WebSocket error:", err);
+    }
+
+    function getCode() {
+      return [...document.querySelectorAll(".code-box")].map(i => i.value).join("");
     }
 
     function sendGateRequest() {
-      const code = document.getElementById("codeInput").value.trim();
+      const code = getCode();
 
       if (!ws || ws.readyState !== WebSocket.OPEN) {
         messageBox.textContent = "⚠️ Gate system not connected.";
@@ -101,6 +122,15 @@
         messageBox.style.color = "red";
       }
     }
+
+    document.querySelectorAll(".code-box").forEach((box, index, boxes) => {
+      box.addEventListener("input", () => {
+        if (box.value && index < boxes.length - 1) boxes[index + 1].focus();
+      });
+      box.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !box.value && index > 0) boxes[index - 1].focus();
+      });
+    });
 
     connectWebSocket();
   </script>
